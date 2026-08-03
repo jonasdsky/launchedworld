@@ -5,7 +5,7 @@
 // Optionally set ANTHROPIC_MODEL (defaults below).
 // ─────────────────────────────────────────────────────────────
 
-const MODEL = process.env.ANTHROPIC_MODEL || 'claude-3-5-sonnet-latest';
+const MODEL = process.env.ANTHROPIC_MODEL || 'claude-sonnet-5';
 
 const SYSTEM_STUDENTS = `You are the Launched AI career guide, embedded on the Launched website (launched.life).
 
