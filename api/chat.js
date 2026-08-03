@@ -5,7 +5,7 @@
 // Optionally set ANTHROPIC_MODEL (defaults below).
 // ─────────────────────────────────────────────────────────────
 
-const MODEL = process.env.ANTHROPIC_MODEL || 'claude-sonnet-5';
+const MODEL = process.env.ANTHROPIC_MODEL || 'claude-3-5-sonnet-latest';
 
 const SYSTEM_STUDENTS = `You are the Launched AI career guide, embedded on the Launched website (launched.life).
 
@@ -80,6 +80,7 @@ export default async function handler(req, res) {
 
     if (!anthropicRes.ok) {
       const errText = await anthropicRes.text();
+      console.error('Anthropic API error', anthropicRes.status, errText);  // shows in Vercel logs
       return res.status(502).json({ error: 'Upstream error', detail: errText.slice(0, 500) });
     }
 
