@@ -330,6 +330,11 @@ body.sb-collapsed .dock{left:64px;}
 .voice-status{margin-top:40px;font-size:0.92rem;color:var(--text);font-weight:300;min-height:1.6em;text-align:center;}
 .voice-transcript{margin-top:14px;font-size:0.76rem;color:var(--muted);max-width:560px;text-align:center;line-height:1.6;min-height:1.4em;}
 .voice-hint{margin-top:8px;font-size:0.656rem;color:var(--faint);}
+.voice-seechat{margin-top:22px;display:inline-flex;align-items:center;gap:8px;
+  background:var(--surface);border:1px solid var(--line-md);border-radius:100px;
+  padding:9px 18px;font-family:'DM Sans',sans-serif;font-size:0.72rem;font-weight:500;
+  color:var(--text);cursor:pointer;transition:all 0.15s;box-shadow:0 4px 16px rgba(28,27,24,0.06);}
+.voice-seechat:hover{border-color:var(--accent);color:var(--accent-deep);transform:translateY(-1px);}
 .voice-unsupported{margin-top:30px;font-size:0.72rem;color:var(--accent-deep);max-width:440px;text-align:center;line-height:1.5;display:none;}
 
 /* ── ATTACHMENT MENU + CHIPS ── */
@@ -581,6 +586,10 @@ body.sb-collapsed .dock{left:64px;}
   <div class="voice-status" id="voiceStatus">Tap the orb to talk</div>
   <div class="voice-transcript" id="voiceTranscript"></div>
   <div class="voice-hint" id="voiceHint">Ask about careers, companies, or your next move</div>
+  <button class="voice-seechat" id="voiceSeeChat" onclick="exitVoice()" style="display:none;">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M4 5h16v11H8l-4 4V5z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg>
+    See it in the chat
+  </button>
   <div class="voice-unsupported" id="voiceUnsupported">Your browser doesn't support voice input. Try Chrome, or use the chat instead.</div>
 </div>
 
@@ -846,10 +855,11 @@ const voiceTranscript=document.getElementById('voiceTranscript');
 const voiceHint=document.getElementById('voiceHint');
 const voiceUnsupported=document.getElementById('voiceUnsupported');
 const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
-let recog=null, voiceActive=false, voiceBusy=false;
+let recog=null, voiceActive=false, voiceBusy=false, voiceHasChat=false;
 
 function enterVoice(){
   voiceView.classList.add('show');voiceActive=true;
+  document.getElementById('voiceSeeChat').style.display='none';
   if(!SR){voiceUnsupported.style.display='block';voiceStatus.textContent='Voice not available';
     voiceHint.style.display='none';orbBtn.style.opacity='0.5';return;}
   voiceStatus.textContent='Tap the orb to talk';
@@ -858,6 +868,9 @@ function exitVoice(){
   voiceView.classList.remove('show','listening','speaking');voiceActive=false;
   try{if(recog)recog.abort();}catch(e){}
   stopSpeaking();
+  document.getElementById('voiceSeeChat').style.display='none';
+  // if the voice session produced a conversation, reveal it in the chat view
+  if(voiceHasChat){document.body.classList.add('chatting');window.scrollTo({top:document.body.scrollHeight,behavior:'smooth'});}
 }
 
 let currentAudio=null;
@@ -943,14 +956,23 @@ async function handleVoiceQuery(q){
   }catch(e){}
   const local=findAnswer(q);
   if(!reply)reply=local.a;
+  const followups=local.f;
   convo.push({role:'assistant',content:reply});
-  // also log into chat history behind the scenes
-  if(!firstAsked){addHistory(q);}
+
+  // Mirror the exchange into the chat view so it's a real record with the roles table.
+  if(!firstAsked){enterChat();addHistory(q);chatTitle.textContent=q;}
+  addUserMsg(q);
+  const chatWrap=addAiMsg();
+  pendingJobs=(voiceJobs&&voiceJobs.length)?voiceJobs:null; // reuse jobs already fetched -> renders the table
+  renderInto(chatWrap,reply,followups,q);
+  voiceHasChat=true;
+
   voiceStatus.textContent='Speaking…';
   voiceTranscript.textContent=reply.replace(/\n+/g,' ');
   await speak(reply);
   voiceView.classList.remove('speaking');
   voiceStatus.textContent='Tap the orb to continue';
+  document.getElementById('voiceSeeChat').style.display='inline-flex';
   voiceBusy=false;
 }
 
