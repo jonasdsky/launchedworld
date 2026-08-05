@@ -659,15 +659,40 @@ async function afterText(wrap,followups,q){
   }
   window.scrollTo({top:document.body.scrollHeight,behavior:'smooth'});}
 
+let pendingJobs=null; // live jobs fetched for the current role query, reused by the card
+
 async function ask(q){
   if(!q||!q.trim()||busy)return;busy=true;
   if(!firstAsked){enterChat();addHistory(q);chatTitle.textContent=q;}
   addUserMsg(q);
   const wrap=addAiMsg();
   convo.push({role:'user',content:q});
+
+  // For role questions, pull the live jobs FIRST so Claude can answer from real data.
+  pendingJobs=null;
+  let jobsContext=null;
+  if(isRoleQuery(q)){
+    try{
+      pendingJobs=await fetchJobs(q);
+      if(pendingJobs&&pendingJobs.length){
+        const lines=pendingJobs.slice(0,12).map(j=>{
+          const sal=j.salaryLabel||(j.salary?('$'+Math.round(j.salary/1000)+'k'):'salary N/A');
+          return '- '+j.role+' at '+j.company+' ('+j.location+', '+sal+')';
+        }).join('\\n');
+        jobsContext='LIVE_ROLE_DATA (real current openings pulled from partner ATS boards just now — use these as the factual basis for your answer; do not claim you lack this information):\\n'+lines;
+      }
+    }catch(e){}
+  }
+
+  // Build the messages to send: inject live job data as a system-style context on the last user turn
+  const sendMsgs=convo.slice();
+  if(jobsContext){
+    sendMsgs[sendMsgs.length-1]={role:'user',content:q+'\\n\\n'+jobsContext};
+  }
+
   let reply=null,followups=null;
   try{const r=await fetch('/api/chat',{method:'POST',headers:{'content-type':'application/json'},
-    body:JSON.stringify({messages:convo,mode:'students'})});
+    body:JSON.stringify({messages:sendMsgs,mode:'students'})});
     if(r.ok){const d=await r.json();if(d&&d.reply)reply=d.reply;}}catch(e){}
   const local=findAnswer(q);
   if(!reply)reply=local.a;
@@ -1056,7 +1081,9 @@ async function maybeRenderRoles(wrap,q){
   loader.innerHTML='<span class="thinking"><span></span><span></span><span></span></span> Searching live roles…';
   wrap.appendChild(loader);
   window.scrollTo({top:document.body.scrollHeight,behavior:'smooth'});
-  const jobs=await fetchJobs(q);
+  // reuse the jobs already fetched in ask() for this query; otherwise fetch now
+  const jobs=(pendingJobs&&pendingJobs.length)?pendingJobs:await fetchJobs(q);
+  pendingJobs=null;
   loader.remove();
   if(jobs&&jobs.length)renderRolesCard(wrap,jobs,q);
   return true;
