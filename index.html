@@ -98,10 +98,53 @@ body.chatting .landbar{display:none;}
 .hero{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
   padding:40px 24px 80px;width:100%;max-width:900px;margin:0 auto;}
 body.chatting .hero{display:none;}
-.mascot{width:62px;height:62px;margin-bottom:26px;
+.mascot{position:relative;width:78px;height:78px;margin-bottom:26px;border:none;background:none;
+  cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;
   opacity:0;animation:pop 0.6s 0.05s cubic-bezier(0.34,1.56,0.64,1) forwards;}
-.mascot img{width:100%;height:100%;animation:bob 4.5s ease-in-out infinite;}
+/* hero orb (flowing peach + trust-blue sphere) */
+.m-orb{width:62px;height:62px;border-radius:50%;position:relative;overflow:hidden;z-index:2;
+  background:linear-gradient(135deg,#FBD9C4 0%,#F5B896 30%,#A8C4E4 70%,#7FA8D8 100%);
+  box-shadow:inset 0 -5px 12px rgba(30,50,80,0.22),inset 0 3px 9px rgba(255,255,255,0.45),0 8px 22px rgba(245,145,94,0.28);
+  transition:transform 0.4s cubic-bezier(0.34,1.56,0.64,1);animation:bob 4.5s ease-in-out infinite;}
+.m-sheen{position:absolute;inset:-25%;border-radius:50%;
+  background:conic-gradient(from 0deg,#F5915E 0deg,#F7B48C 60deg,#CBD5E8 130deg,#2E6BB8 200deg,#6F9BD4 270deg,#F5915E 360deg);
+  filter:blur(7px);opacity:0.9;animation:sheenSpin 14s linear infinite;}
+.m-field{position:absolute;inset:0;animation:fieldSpin 18s linear infinite;}
+.m-blob{position:absolute;border-radius:50%;filter:blur(4px);mix-blend-mode:screen;}
+.m-b1{width:34px;height:34px;background:radial-gradient(circle,#F5915E 0%,rgba(245,145,94,0) 70%);top:5px;left:7px;animation:bf1 8s ease-in-out infinite;}
+.m-b2{width:30px;height:30px;background:radial-gradient(circle,#FFB48C 0%,rgba(255,180,140,0) 70%);top:11px;right:6px;animation:bf2 7s ease-in-out infinite;}
+.m-b3{width:28px;height:28px;background:radial-gradient(circle,#EAF2FB 0%,rgba(234,242,251,0) 72%);bottom:7px;right:9px;animation:bf3 9s ease-in-out infinite;}
+.m-b4{width:32px;height:32px;background:radial-gradient(circle,#2E6BB8 0%,rgba(46,107,184,0) 70%);bottom:4px;left:5px;animation:bf4 9s ease-in-out infinite;}
+.m-b5{width:26px;height:26px;background:radial-gradient(circle,#9CC4EC 0%,rgba(156,196,236,0) 72%);top:18px;left:18px;animation:bf5 6s ease-in-out infinite;}
+.m-gloss{position:absolute;inset:0;border-radius:50%;
+  background:radial-gradient(circle at 34% 26%,rgba(255,255,255,0.55) 0%,rgba(255,255,255,0) 42%);}
+.mascot:hover .m-sheen{animation-duration:7s;}
+/* soft glowing halo behind the logo */
+.mascot::before{content:'';position:absolute;width:78px;height:78px;border-radius:50%;
+  background:radial-gradient(circle,rgba(245,145,94,0.35) 0%,rgba(46,107,184,0.14) 45%,transparent 70%);
+  opacity:0;transform:scale(0.7);transition:opacity 0.35s,transform 0.35s;z-index:0;}
+/* pulsing ring */
+.mascot::after{content:'';position:absolute;width:70px;height:70px;border-radius:50%;
+  border:1.5px solid rgba(245,145,94,0.5);opacity:0;transform:scale(0.85);z-index:1;pointer-events:none;}
+.mascot:hover .m-orb{transform:scale(1.1);}
+.mascot:hover::before{opacity:1;transform:scale(1.35);}
+.mascot:hover::after{animation:mascotRing 1.6s ease-out infinite;}
+@keyframes mascotRing{0%{opacity:0.6;transform:scale(0.85)}100%{opacity:0;transform:scale(1.5)}}
 @keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+/* little mic badge that appears on hover */
+.mascot-mic{position:absolute;bottom:-2px;right:-2px;width:26px;height:26px;border-radius:50%;
+  background:var(--dark);color:#fff;display:flex;align-items:center;justify-content:center;z-index:3;
+  box-shadow:0 3px 10px rgba(0,0,0,0.2);opacity:0;transform:scale(0.5) translateY(4px);
+  transition:opacity 0.28s cubic-bezier(0.34,1.56,0.64,1),transform 0.28s cubic-bezier(0.34,1.56,0.64,1);}
+.mascot:hover .mascot-mic{opacity:1;transform:scale(1) translateY(0);}
+/* "Talk to Launched" tooltip */
+.mascot-tip{position:absolute;top:100%;left:50%;transform:translateX(-50%) translateY(6px);
+  margin-top:12px;background:var(--dark);color:#fff;font-size:0.62rem;font-weight:500;
+  padding:5px 11px;border-radius:100px;white-space:nowrap;opacity:0;pointer-events:none;
+  transition:opacity 0.25s,transform 0.25s;z-index:5;}
+.mascot-tip::before{content:'';position:absolute;top:-4px;left:50%;transform:translateX(-50%) rotate(45deg);
+  width:8px;height:8px;background:var(--dark);}
+.mascot:hover .mascot-tip{opacity:1;transform:translateX(-50%) translateY(0);}
 @keyframes pop{from{opacity:0;transform:scale(0.6)}to{opacity:1;transform:scale(1)}}
 .hero h1{font-family:'DM Serif Display',serif;font-weight:400;font-size:clamp(1.68rem,4.5vw,2.56rem);
   line-height:1.06;letter-spacing:-0.02em;text-align:center;margin-bottom:0.7rem;
@@ -447,7 +490,11 @@ body.sb-collapsed .dock{left:64px;}
 
   <!-- Landing hero -->
   <div class="hero">
-    <div class="mascot"><img src="data:image/png;base64,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" alt="Launched"></div>
+    <button class="mascot" id="heroMascot" aria-label="Talk to Launched" title="Talk to Launched">
+      <span class="m-orb"><span class="m-sheen"></span><span class="m-field"><span class="m-blob m-b1"></span><span class="m-blob m-b2"></span><span class="m-blob m-b3"></span><span class="m-blob m-b4"></span><span class="m-blob m-b5"></span></span><span class="m-gloss"></span></span>
+      <span class="mascot-mic"><svg width="13" height="13" viewBox="0 0 24 24" fill="none"><path d="M12 15a3 3 0 0 0 3-3V6a3 3 0 0 0-6 0v6a3 3 0 0 0 3 3z" fill="currentColor"/><path d="M19 10v2a7 7 0 0 1-14 0v-2M12 19v3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></span>
+      <span class="mascot-tip">Talk to Launched</span>
+    </button>
     <h1>Launched</h1>
     <p class="hero-sub">The easiest way to find your career.</p>
     <div class="promptbox">
@@ -867,11 +914,31 @@ async function handleVoiceQuery(q){
   voiceView.classList.remove('listening');
   voiceTranscript.textContent='“'+q+'”';
   voiceStatus.textContent='Thinking…';
+
+  // For role questions, pull live Ashby jobs first and feed them to Claude
+  let jobsContext=null, voiceJobs=null;
+  if(isRoleQuery(q)){
+    voiceStatus.textContent='Searching live roles…';
+    try{
+      voiceJobs=await fetchJobs(q);
+      if(voiceJobs&&voiceJobs.length){
+        const lines=voiceJobs.slice(0,12).map(j=>{
+          const sal=j.salaryLabel||(j.salary?('$'+Math.round(j.salary/1000)+'k'):'salary N/A');
+          return '- '+j.role+' at '+j.company+' ('+j.location+', '+sal+')';
+        }).join('\n');
+        jobsContext='LIVE_ROLE_DATA (real current openings pulled from partner ATS boards just now — use these as the factual basis for your answer; do not claim you lack this information). Since this is a spoken conversation, mention the 2-3 most relevant roles with their salaries out loud, conversationally:\n'+lines;
+      }
+    }catch(e){}
+    voiceStatus.textContent='Thinking…';
+  }
+
   let reply=null;
   try{
     convo.push({role:'user',content:q});
+    const sendMsgs=convo.slice();
+    if(jobsContext){sendMsgs[sendMsgs.length-1]={role:'user',content:q+'\n\n'+jobsContext};}
     const r=await fetch('/api/chat',{method:'POST',headers:{'content-type':'application/json'},
-      body:JSON.stringify({messages:convo,mode:'students'})});
+      body:JSON.stringify({messages:sendMsgs,mode:'students'})});
     if(r.ok){const d=await r.json();if(d&&d.reply)reply=d.reply;}
   }catch(e){}
   const local=findAnswer(q);
@@ -924,6 +991,7 @@ if(window.speechSynthesis){window.speechSynthesis.onvoiceschanged=()=>{};window.
 
 // mic buttons enter voice mode
 document.getElementById('micBtn').onclick=enterVoice;
+var heroMascotBtn=document.getElementById('heroMascot');if(heroMascotBtn)heroMascotBtn.onclick=enterVoice;
 document.getElementById('dockMic').onclick=enterVoice;
 
 // feedback thumbs toast
