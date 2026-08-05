@@ -810,14 +810,16 @@ function enterVoice(){
 function exitVoice(){
   voiceView.classList.remove('show','listening','speaking');voiceActive=false;
   try{if(recog)recog.abort();}catch(e){}
-  try{window.speechSynthesis.cancel();}catch(e){}
+  stopSpeaking();
 }
 
-function speak(text){
+let currentAudio=null;
+
+// Browser TTS fallback (used if ElevenLabs isn't reachable)
+function speakBrowser(text){
   return new Promise(resolve=>{
     if(!window.speechSynthesis){resolve();return;}
     window.speechSynthesis.cancel();
-    // strip to a spoken-friendly version, cap length
     const clean=text.replace(/\n+/g,' ').slice(0,600);
     const u=new SpeechSynthesisUtterance(clean);
     u.rate=1.02;u.pitch=1.0;
@@ -825,9 +827,39 @@ function speak(text){
     const pref=vs.find(v=>/female|samantha|google us english|karen|moira|tessa/i.test(v.name))||vs.find(v=>v.lang.startsWith('en'));
     if(pref)u.voice=pref;
     u.onend=resolve;u.onerror=resolve;
-    voiceView.classList.add('speaking');
     window.speechSynthesis.speak(u);
   });
+}
+
+// ElevenLabs TTS via /api/tts, with graceful fallback to the browser voice
+async function speak(text){
+  voiceView.classList.add('speaking');
+  const clean=text.replace(/\n+/g,' ').trim().slice(0,2500);
+  try{
+    const r=await fetch('/api/tts',{method:'POST',headers:{'content-type':'application/json'},
+      body:JSON.stringify({text:clean})});
+    if(r.ok){
+      const blob=await r.blob();
+      if(blob&&blob.size>0){
+        const url=URL.createObjectURL(blob);
+        await new Promise(resolve=>{
+          currentAudio=new Audio(url);
+          currentAudio.onended=()=>{URL.revokeObjectURL(url);currentAudio=null;resolve();};
+          currentAudio.onerror=()=>{URL.revokeObjectURL(url);currentAudio=null;resolve();};
+          currentAudio.play().catch(()=>{ // autoplay blocked -> fall back
+            URL.revokeObjectURL(url);currentAudio=null;speakBrowser(text).then(resolve);
+          });
+        });
+        return;
+      }
+    }
+  }catch(e){/* fall through to browser voice */}
+  await speakBrowser(text);
+}
+
+function stopSpeaking(){
+  try{if(currentAudio){currentAudio.pause();currentAudio=null;}}catch(e){}
+  try{window.speechSynthesis.cancel();}catch(e){}
 }
 
 async function handleVoiceQuery(q){
@@ -883,7 +915,7 @@ function startListening(){
 orbBtn.addEventListener('click',()=>{
   if(!SR){toast('Voice needs Chrome or Safari');return;}
   if(voiceView.classList.contains('listening')){try{recog.stop();}catch(e){}return;}
-  if(voiceBusy){window.speechSynthesis.cancel();voiceView.classList.remove('speaking');voiceBusy=false;
+  if(voiceBusy){stopSpeaking();voiceView.classList.remove('speaking');voiceBusy=false;
     voiceStatus.textContent='Tap the orb to talk';return;}
   startListening();
 });
