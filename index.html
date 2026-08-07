@@ -96,7 +96,7 @@ body.chatting .landbar{display:none;}
 
 /* ── HERO (landing) ── */
 .hero{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
-  padding:40px 24px 80px;width:100%;max-width:900px;margin:0 auto;}
+  padding:40px 24px 60px;width:100%;max-width:900px;margin:0 auto;}
 body.chatting .hero{display:none;}
 .mascot{position:relative;width:78px;height:78px;margin-bottom:26px;border:none;background:none;
   cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;
@@ -415,6 +415,254 @@ body.sb-collapsed .dock{left:64px;}
 .roles-cta:hover{background:#000;}
 .roles-load{display:flex;align-items:center;gap:10px;color:var(--muted);font-size:0.72rem;padding:8px 0;}
 @media(max-width:600px){.bar-label{width:88px}.roles-table .hide-sm{display:none}}
+
+/* ── OPPORTUNITIES BOARD (S-tier: list / grid / table + slide-in detail) ── */
+body.chatting .opps{display:none;}
+.opps{width:100%;max-width:1180px;margin:0 auto;padding:20px 24px 140px;display:block;}
+.opps-head{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:4px;}
+.opps-h1{font-family:'DM Serif Display',serif;font-size:1.5rem;font-weight:400;letter-spacing:-0.01em;display:flex;align-items:center;gap:10px;}
+.opps-h1 .live-dot{width:8px;height:8px;border-radius:50%;background:#3BB273;position:relative;}
+.opps-h1 .live-dot::after{content:'';position:absolute;inset:-5px;border-radius:50%;background:rgba(59,178,115,0.3);animation:pulse 1.8s ease-out infinite;}
+.opps-count{font-size:0.72rem;color:var(--muted);}
+.opps-sub{font-size:0.8rem;color:var(--muted);margin-bottom:18px;}
+
+/* toolbar */
+.opps-tools{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:14px;
+  position:sticky;top:0;background:linear-gradient(var(--bg) 68%,rgba(250,249,245,0));padding:10px 0;z-index:9;}
+.opps-search{flex:1;min-width:190px;display:flex;align-items:center;gap:9px;background:var(--surface);
+  border:1px solid var(--line-md);border-radius:100px;padding:9px 16px;transition:border-color 0.15s;}
+.opps-search:focus-within{border-color:var(--accent);}
+.opps-search svg{color:var(--faint);flex-shrink:0;}
+.opps-search input{flex:1;border:none;outline:none;background:none;font-family:'DM Sans',sans-serif;font-size:0.8rem;color:var(--text);}
+.opps-search input::placeholder{color:var(--faint);}
+.opps-sort{border:1px solid var(--line-md);border-radius:100px;background:var(--surface);
+  font-family:'DM Sans',sans-serif;font-size:0.74rem;color:var(--text);padding:9px 14px;cursor:pointer;outline:none;}
+/* view toggle */
+.view-toggle{display:inline-flex;background:rgba(28,27,24,0.05);border-radius:10px;padding:3px;gap:2px;}
+.view-btn{width:32px;height:30px;border:none;background:none;border-radius:7px;cursor:pointer;color:var(--muted);
+  display:flex;align-items:center;justify-content:center;transition:all 0.15s;}
+.view-btn.on{background:var(--surface);color:var(--text);box-shadow:0 1px 4px rgba(28,27,24,0.12);}
+
+.opps-chips{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:16px;}
+.opps-chip{font-family:'DM Sans',sans-serif;font-size:0.72rem;font-weight:500;color:var(--muted);
+  background:var(--surface);border:1px solid var(--line);border-radius:100px;padding:6px 14px;cursor:pointer;transition:all 0.14s;}
+.opps-chip:hover{border-color:var(--line-md);color:var(--text);}
+.opps-chip.on{background:var(--dark);color:#fff;border-color:var(--dark);}
+
+/* ── LIST MODE ── */
+.opps-list{display:flex;flex-direction:column;gap:8px;}
+.opp{display:flex;align-items:center;gap:14px;background:var(--surface);border:1px solid var(--line);
+  border-radius:14px;padding:14px 18px;cursor:pointer;transition:border-color .16s,box-shadow .16s,transform .16s;
+  opacity:0;transform:translateY(10px);animation:oppIn 0.4s forwards;}
+@keyframes oppIn{to{opacity:1;transform:translateY(0)}}
+.opp:hover{border-color:rgba(245,145,94,0.4);box-shadow:0 8px 26px rgba(28,27,24,0.07);transform:translateY(-1px);}
+.opp.active{border-color:var(--accent);box-shadow:0 8px 26px rgba(245,145,94,0.14);}
+.opp-avatar{width:44px;height:44px;border-radius:12px;flex-shrink:0;display:flex;align-items:center;justify-content:center;
+  font-family:'DM Serif Display',serif;font-size:1.1rem;color:#fff;}
+.opp-av-ai{background:linear-gradient(135deg,#2E6BB8,#5B9BD5);}
+.opp-av-def{background:linear-gradient(135deg,#F5915E,#C25E30);}
+.opp-av-rob{background:linear-gradient(135deg,#9B59B6,#7D3C98);}
+.opp-av-energy{background:linear-gradient(135deg,#2EA469,#1E8449);}
+.opp-avatar img,.od-avatar img{width:100%;height:100%;object-fit:cover;border-radius:inherit;}
+.opp-avatar.has-logo,.od-avatar.has-logo{background:#fff;border:1px solid var(--line);}
+.opp-avatar.has-logo img,.od-avatar.has-logo img{object-fit:contain;padding:6px;}
+.opp-main{flex:1;min-width:0;}
+.opp-role{font-size:0.9rem;font-weight:600;color:var(--text);margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:flex;align-items:center;gap:8px;}
+.opp-meta{display:flex;align-items:center;gap:9px;flex-wrap:wrap;font-size:0.72rem;color:var(--muted);}
+.opp-meta .dot{width:3px;height:3px;border-radius:50%;background:var(--faint);}
+.opp-sal{flex-shrink:0;text-align:right;min-width:96px;}
+.opp-sal-v{font-size:0.92rem;font-weight:700;color:var(--text);white-space:nowrap;letter-spacing:-0.01em;}
+.opp-sal-l{font-size:0.62rem;color:var(--faint);margin-top:1px;}
+.opp-apply{flex-shrink:0;width:34px;height:34px;border-radius:10px;border:1px solid var(--line-md);background:none;
+  color:var(--muted);display:flex;align-items:center;justify-content:center;transition:all 0.15s;}
+.opp:hover .opp-apply{background:var(--dark);color:#fff;border-color:var(--dark);}
+.opp-tag{display:inline-block;font-size:0.58rem;font-weight:600;padding:2px 8px;border-radius:100px;white-space:nowrap;}
+.opp-tag.ai{background:rgba(46,107,184,0.12);color:var(--trust-deep);}
+.opp-tag.def{background:rgba(245,145,94,0.14);color:var(--accent-deep);}
+.opp-tag.rob{background:rgba(155,89,182,0.14);color:#7D3C98;}
+.opp-tag.energy{background:rgba(46,164,105,0.14);color:#1E8449;}
+/* subtle signal badges */
+.opp-badge{font-size:0.56rem;font-weight:600;padding:2px 7px;border-radius:100px;letter-spacing:0.02em;white-space:nowrap;}
+.opp-badge.new{background:rgba(46,107,184,0.1);color:var(--trust-deep);}
+.opp-badge.remote{background:rgba(28,27,24,0.05);color:var(--muted);}
+.opp-badge.hot{background:rgba(245,145,94,0.14);color:var(--accent-deep);}
+/* subtle match pill */
+.opp-match{font-size:0.6rem;font-weight:600;color:#2E9E63;display:inline-flex;align-items:center;gap:4px;white-space:nowrap;}
+.opp-match .mdot{width:5px;height:5px;border-radius:50%;background:#3BB273;}
+
+/* ── GRID MODE ── */
+.opps-list.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px;}
+.opps-list.grid .opp{flex-direction:column;align-items:flex-start;gap:12px;padding:18px;}
+.opps-list.grid .opp-top{display:flex;align-items:center;gap:12px;width:100%;}
+.opps-list.grid .opp-main{width:100%;}
+.opps-list.grid .opp-role{white-space:normal;}
+.opps-list.grid .opp-sal{text-align:left;min-width:0;width:100%;display:flex;align-items:baseline;gap:8px;
+  border-top:1px solid var(--line);padding-top:12px;}
+.opps-list.grid .opp-sal-l{margin:0;}
+.opps-list.grid .opp-apply{display:none;}
+.opps-list.grid .opp-gridfoot{display:flex;align-items:center;justify-content:space-between;width:100%;}
+
+/* ── TABLE MODE ── */
+.opps-list.table{display:table;width:100%;border-collapse:separate;border-spacing:0;background:var(--surface);
+  border:1px solid var(--line);border-radius:14px;overflow:hidden;}
+.opps-list.table .opp{display:table-row;background:none;border:none;border-radius:0;transform:none;animation:none;opacity:1;box-shadow:none;}
+.opps-list.table .opp:hover{background:rgba(245,145,94,0.04);transform:none;box-shadow:none;}
+.opps-list.table .opp>*{display:table-cell;vertical-align:middle;padding:13px 16px;border-bottom:1px solid var(--line);}
+.opps-list.table .opp:last-child>*{border-bottom:none;}
+.opps-list.table .opp-avatar{width:32px;height:32px;border-radius:9px;font-size:0.85rem;}
+.opps-list.table .opp-sal{text-align:right;}
+.opps-list.table .opp-apply{display:none;}
+.tbl-head{display:none;}
+.opps-list.table+.tbl-head,.tbl-head.show{display:table-header-group;}
+
+.opps-sentinel{height:1px;}
+.opps-loader{display:flex;align-items:center;justify-content:center;gap:10px;padding:22px 0;color:var(--muted);font-size:0.74rem;}
+.opps-end{text-align:center;padding:24px 0 8px;color:var(--faint);font-size:0.74rem;}
+.opps-empty{text-align:center;padding:40px 0;color:var(--muted);font-size:0.82rem;}
+/* skeleton */
+.opp-skel{display:flex;align-items:center;gap:14px;background:var(--surface);border:1px solid var(--line);
+  border-radius:14px;padding:14px 18px;}
+.skel-box{background:linear-gradient(90deg,rgba(28,27,24,0.05) 25%,rgba(28,27,24,0.09) 37%,rgba(28,27,24,0.05) 63%);
+  background-size:400% 100%;animation:shimmer 1.4s ease infinite;border-radius:8px;}
+@keyframes shimmer{0%{background-position:100% 0}100%{background-position:-100% 0}}
+
+
+/* ── JOBS PAGE (TrueUp-style) ── */
+.jobs-view{display:none;position:fixed;inset:0 0 0 0;z-index:60;background:var(--bg);overflow:hidden;}
+body.jobs-open .jobs-view{display:flex;flex-direction:column;}
+/* offset for sidebar */
+.jobs-view{left:64px;transition:left 0.26s cubic-bezier(0.4,0,0.2,1);}
+body:not(.sb-collapsed) .jobs-view{left:272px;}
+@media(max-width:860px){.jobs-view{left:0 !important;}}
+
+.jobs-top{display:flex;align-items:center;gap:14px;padding:16px 26px;border-bottom:1px solid var(--line);flex-shrink:0;}
+.jobs-top h1{font-family:'DM Serif Display',serif;font-size:1.3rem;font-weight:400;letter-spacing:-0.01em;}
+.jobs-top .jt-count{font-size:0.72rem;color:var(--muted);}
+.jobs-top .jt-count b{color:#2E9E63;}
+.jobs-close{margin-left:auto;width:36px;height:36px;border-radius:10px;border:1px solid var(--line-md);
+  background:var(--surface);color:var(--muted);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.15s;}
+.jobs-close:hover{color:var(--text);border-color:var(--text);}
+
+.jobs-body{flex:1;display:flex;min-height:0;}
+
+/* left filter rail */
+.jobs-filters{width:250px;flex-shrink:0;border-right:1px solid var(--line);overflow-y:auto;padding:18px 16px 40px;}
+.jf-search{display:flex;align-items:center;gap:9px;background:var(--surface);border:1px solid var(--line-md);
+  border-radius:10px;padding:9px 13px;margin-bottom:20px;transition:border-color 0.15s;}
+.jf-search:focus-within{border-color:var(--accent);}
+.jf-search svg{color:var(--faint);flex-shrink:0;}
+.jf-search input{flex:1;border:none;outline:none;background:none;font-size:0.78rem;color:var(--text);font-family:'DM Sans',sans-serif;}
+.jf-search input::placeholder{color:var(--faint);}
+.jf-group{margin-bottom:18px;border-bottom:1px solid var(--line);padding-bottom:16px;}
+.jf-group:last-child{border-bottom:none;}
+.jf-title{display:flex;align-items:center;justify-content:space-between;font-size:0.72rem;font-weight:600;
+  color:var(--text);cursor:pointer;margin-bottom:10px;user-select:none;}
+.jf-title svg{color:var(--faint);transition:transform 0.2s;}
+.jf-group.collapsed .jf-title svg{transform:rotate(-90deg);}
+.jf-group.collapsed .jf-opts{display:none;}
+.jf-opts{display:flex;flex-direction:column;gap:2px;}
+.jf-opt{display:flex;align-items:center;gap:9px;padding:5px 6px;border-radius:7px;cursor:pointer;
+  font-size:0.76rem;color:var(--text);transition:background 0.12s;}
+.jf-opt:hover{background:rgba(28,27,24,0.04);}
+.jf-check{width:16px;height:16px;border-radius:5px;border:1.5px solid var(--line-md);flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;transition:all 0.13s;color:transparent;}
+.jf-opt.on .jf-check{background:var(--dark);border-color:var(--dark);color:#fff;}
+.jf-opt:not(.on) .jf-check svg{opacity:0;}
+.jf-opt .jf-count{margin-left:auto;font-size:0.68rem;color:var(--faint);}
+.jf-clear{font-size:0.72rem;color:var(--accent-deep);cursor:pointer;background:none;border:none;padding:0;font-family:'DM Sans',sans-serif;}
+
+/* results column */
+.jobs-results{flex:1;overflow-y:auto;padding:16px 24px 60px;min-width:0;}
+.jr-bar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px;flex-wrap:wrap;
+  position:sticky;top:0;background:linear-gradient(var(--bg) 72%,rgba(250,249,245,0));padding:6px 0 12px;z-index:5;}
+.jr-count{font-size:0.8rem;color:var(--text);font-weight:500;}
+.jr-count b{color:var(--accent-deep);}
+.jr-sort{border:1px solid var(--line-md);border-radius:9px;background:var(--surface);font-size:0.74rem;
+  color:var(--text);padding:8px 12px;cursor:pointer;outline:none;font-family:'DM Sans',sans-serif;}
+.jr-active{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px;}
+.jr-pill{display:inline-flex;align-items:center;gap:6px;font-size:0.68rem;background:var(--surface);
+  border:1px solid var(--line-md);border-radius:100px;padding:4px 6px 4px 11px;color:var(--text);}
+.jr-pill .x{cursor:pointer;color:var(--faint);display:flex;}
+.jr-pill .x:hover{color:var(--text);}
+
+/* job row */
+.jrow{display:flex;align-items:center;gap:14px;background:var(--surface);border:1px solid var(--line);
+  border-radius:12px;padding:14px 16px;margin-bottom:8px;cursor:pointer;transition:border-color .15s,box-shadow .15s;
+  opacity:0;animation:oppIn 0.35s forwards;}
+.jrow:hover{border-color:rgba(245,145,94,0.4);box-shadow:0 6px 20px rgba(28,27,24,0.06);}
+.jrow.active{border-color:var(--accent);box-shadow:0 6px 20px rgba(245,145,94,0.13);}
+.jrow-av{width:42px;height:42px;border-radius:11px;flex-shrink:0;display:flex;align-items:center;justify-content:center;
+  font-family:'DM Serif Display',serif;font-size:1.05rem;color:#fff;}
+.jrow-av.has-logo{background:#fff;border:1px solid var(--line);}
+.jrow-av img{width:100%;height:100%;object-fit:contain;padding:6px;border-radius:inherit;}
+.jrow-main{flex:1;min-width:0;}
+.jrow-role{font-size:0.86rem;font-weight:600;color:var(--text);margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:flex;align-items:center;gap:8px;}
+.jrow-meta{display:flex;align-items:center;gap:9px;flex-wrap:wrap;font-size:0.72rem;color:var(--muted);}
+.jrow-meta .dot{width:3px;height:3px;border-radius:50%;background:var(--faint);}
+.jrow-sal{flex-shrink:0;text-align:right;min-width:96px;}
+.jrow-sal-v{font-size:0.86rem;font-weight:700;color:var(--text);white-space:nowrap;letter-spacing:-0.01em;}
+.jrow-posted{font-size:0.62rem;color:var(--faint);margin-top:2px;}
+.jrow-tag{display:inline-block;font-size:0.58rem;font-weight:600;padding:2px 8px;border-radius:100px;white-space:nowrap;}
+.jrow-tag.ai{background:rgba(46,107,184,0.12);color:var(--trust-deep);}
+.jrow-tag.def{background:rgba(245,145,94,0.14);color:var(--accent-deep);}
+.jrow-tag.rob{background:rgba(155,89,182,0.14);color:#7D3C98;}
+.jrow-tag.energy{background:rgba(46,164,105,0.14);color:#1E8449;}
+.jrow-badge{font-size:0.56rem;font-weight:600;padding:2px 7px;border-radius:100px;white-space:nowrap;}
+.jrow-badge.new{background:rgba(46,107,184,0.1);color:var(--trust-deep);}
+.jrow-badge.hot{background:rgba(245,145,94,0.14);color:var(--accent-deep);}
+.jobs-empty{text-align:center;padding:50px 0;color:var(--muted);font-size:0.84rem;}
+.jobs-end{text-align:center;padding:22px 0;color:var(--faint);font-size:0.72rem;}
+.jobs-sentinel{height:1px;}
+@media(max-width:760px){
+  .jobs-filters{position:absolute;left:-260px;top:0;bottom:0;background:var(--bg);z-index:10;transition:left 0.25s;box-shadow:8px 0 30px rgba(0,0,0,0.1);}
+  .jobs-filters.open{left:0;}
+  .jf-toggle-m{display:inline-flex!important;}
+  .jrow-meta .loc-hide{display:none}
+}
+.jf-toggle-m{display:none;}
+
+/* ── SLIDE-IN DETAIL PANEL ── */
+.opp-detail-overlay{position:fixed;inset:0;background:rgba(28,27,24,0.32);z-index:140;opacity:0;
+  pointer-events:none;transition:opacity 0.28s;backdrop-filter:blur(2px);}
+.opp-detail-overlay.show{opacity:1;pointer-events:auto;}
+.opp-detail{position:fixed;top:0;right:0;height:100vh;width:min(480px,92vw);background:var(--surface);
+  z-index:141;box-shadow:-16px 0 50px rgba(28,27,24,0.18);transform:translateX(100%);
+  transition:transform 0.32s cubic-bezier(0.4,0,0.2,1);display:flex;flex-direction:column;}
+.opp-detail.show{transform:translateX(0);}
+.od-head{padding:24px 26px 18px;border-bottom:1px solid var(--line);position:relative;}
+.od-close{position:absolute;top:20px;right:20px;width:34px;height:34px;border-radius:9px;border:none;background:rgba(28,27,24,0.05);
+  color:var(--muted);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.13s;}
+.od-close:hover{background:rgba(28,27,24,0.1);color:var(--text);}
+.od-top{display:flex;align-items:center;gap:14px;margin-bottom:16px;}
+.od-avatar{width:52px;height:52px;border-radius:14px;flex-shrink:0;display:flex;align-items:center;justify-content:center;
+  font-family:'DM Serif Display',serif;font-size:1.3rem;color:#fff;}
+.od-role{font-family:'DM Serif Display',serif;font-size:1.35rem;font-weight:400;line-height:1.15;letter-spacing:-0.01em;margin-bottom:14px;}
+.od-badges{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:2px;}
+.od-body{flex:1;overflow-y:auto;padding:22px 26px;}
+.od-stat-row{display:flex;gap:10px;margin-bottom:20px;}
+.od-stat{flex:1;background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:12px 14px;}
+.od-stat-l{font-size:0.6rem;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:var(--faint);margin-bottom:4px;}
+.od-stat-v{font-size:0.86rem;font-weight:700;color:var(--text);}
+.od-section-t{font-size:0.66rem;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--faint);margin:20px 0 8px;}
+.od-text{font-size:0.86rem;color:var(--text);line-height:1.65;}
+.od-match-box{background:linear-gradient(120deg,rgba(245,145,94,0.08),rgba(46,107,184,0.08));
+  border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin-bottom:4px;}
+.od-match-t{font-size:0.72rem;font-weight:600;color:#2E9E63;display:flex;align-items:center;gap:6px;margin-bottom:6px;}
+.od-match-d{font-size:0.8rem;color:var(--text);line-height:1.55;}
+.od-foot{padding:16px 26px;border-top:1px solid var(--line);display:flex;gap:10px;}
+.od-btn-primary{flex:1;background:var(--dark);color:#fff;border:none;border-radius:100px;padding:13px;
+  font-family:'DM Sans',sans-serif;font-size:0.84rem;font-weight:500;cursor:pointer;transition:background 0.15s;}
+.od-btn-primary:hover{background:#000;}
+.od-btn-ghost{background:none;border:1px solid var(--line-md);border-radius:100px;padding:13px 18px;
+  font-family:'DM Sans',sans-serif;font-size:0.84rem;color:var(--text);cursor:pointer;transition:all 0.15s;white-space:nowrap;}
+.od-btn-ghost:hover{border-color:var(--text);}
+
+@media(max-width:640px){
+  .opp-meta .loc{display:none}.opps-h1{font-size:1.25rem}
+  .opps-list.grid{grid-template-columns:1fr}
+  .opp-detail{width:100vw;height:88vh;top:auto;bottom:0;border-radius:22px 22px 0 0;transform:translateY(100%);}
+  .opp-detail.show{transform:translateY(0);}
+}
 </style>
 </head>
 <body class="sb-collapsed">
@@ -439,6 +687,10 @@ body.sb-collapsed .dock{left:64px;}
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.8"/><path d="M12 8v8M8 12h8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
     New question
   </button>
+  <button class="sb-btn full-only" onclick="openJobs()">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><rect x="3" y="7" width="18" height="13" rx="2" stroke="currentColor" stroke-width="1.8"/><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+    Jobs
+  </button>
   <button class="sb-btn full-only">
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M4 7h10M4 12h16M4 17h7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
     Industries
@@ -460,6 +712,9 @@ body.sb-collapsed .dock{left:64px;}
     <div class="rail-logo" onclick="toggleSidebar()" title="Expand sidebar"><img src="data:image/png;base64,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" alt="Launched"></div>
     <button class="rail-ic dark" onclick="resetHero()" title="New question" style="margin-top:6px;">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+    </button>
+    <button class="rail-ic" title="Jobs" onclick="openJobs()">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><rect x="3" y="7" width="18" height="13" rx="2" stroke="currentColor" stroke-width="1.8"/><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
     </button>
     <button class="rail-ic" title="Industries">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M4 7h10M4 12h16M4 17h7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
@@ -518,6 +773,100 @@ body.sb-collapsed .dock{left:64px;}
       <button class="sg" data-q="What should my resume look like for robotics companies?">Resumes for robotics companies</button>
     </div>
   </div>
+
+
+
+<!-- JOBS PAGE (TrueUp-style) -->
+<div class="jobs-view" id="jobsView">
+  <div class="jobs-top">
+    <button class="jf-toggle-m jobs-close" onclick="document.getElementById('jobsFilters').classList.toggle('open')" aria-label="Filters" style="margin-left:0;">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M3 6h18M6 12h12M10 18h4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+    </button>
+    <h1>Jobs</h1>
+    <span class="jt-count"><b id="jobsLiveCount">0</b> open roles at emerging-tech companies</span>
+    <button class="jobs-close" onclick="closeJobs()" aria-label="Close"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>
+  </div>
+  <div class="jobs-body">
+
+    <!-- FILTER RAIL -->
+    <aside class="jobs-filters" id="jobsFilters">
+      <div class="jf-search">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="1.8"/><path d="M20 20l-3-3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+        <input type="text" id="jobsSearch" placeholder="Search title or company…" autocomplete="off">
+      </div>
+
+      <div class="jf-group" data-facet="sector">
+        <div class="jf-title" onclick="this.parentNode.classList.toggle('collapsed')">Industry <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <div class="jf-opts" id="facetSector"></div>
+      </div>
+
+      <div class="jf-group" data-facet="company">
+        <div class="jf-title" onclick="this.parentNode.classList.toggle('collapsed')">Company <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <div class="jf-opts" id="facetCompany"></div>
+      </div>
+
+      <div class="jf-group" data-facet="location">
+        <div class="jf-title" onclick="this.parentNode.classList.toggle('collapsed')">Location <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <div class="jf-opts" id="facetLocation"></div>
+      </div>
+
+      <div class="jf-group" data-facet="comp">
+        <div class="jf-title" onclick="this.parentNode.classList.toggle('collapsed')">Minimum salary <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <div class="jf-opts" id="facetComp"></div>
+      </div>
+    </aside>
+
+    <!-- RESULTS -->
+    <div class="jobs-results" id="jobsResults">
+      <div class="jr-bar">
+        <div class="jr-count"><b id="jrCount">0</b> jobs</div>
+        <select class="jr-sort" id="jobsSort">
+          <option value="posted">Newest</option>
+          <option value="match">Best match</option>
+          <option value="salary">Highest salary</option>
+          <option value="company">Company A–Z</option>
+        </select>
+      </div>
+      <div class="jr-active" id="jrActive"></div>
+      <div id="jobsList"></div>
+      <div class="jobs-sentinel" id="jobsSentinel"></div>
+      <div class="jobs-empty" id="jobsEmpty" style="display:none;">No jobs match these filters. <button class="jf-clear" onclick="clearJobFilters()">Clear all</button></div>
+      <div class="jobs-end" id="jobsEnd" style="display:none;"></div>
+    </div>
+  </div>
+</div>
+
+  <!-- SLIDE-IN DETAIL PANEL -->
+  <div class="opp-detail-overlay" id="oppDetailOverlay" onclick="closeOppDetail()"></div>
+  <aside class="opp-detail" id="oppDetail" aria-hidden="true">
+    <div class="od-head">
+      <button class="od-close" onclick="closeOppDetail()" aria-label="Close"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>
+      <div class="od-top">
+        <div class="od-avatar" id="odAvatar"></div>
+        <div><div style="font-size:0.8rem;color:var(--muted);" id="odCompany"></div></div>
+      </div>
+      <div class="od-role" id="odRole"></div>
+      <div class="od-badges" id="odBadges"></div>
+    </div>
+    <div class="od-body">
+      <div class="od-stat-row">
+        <div class="od-stat"><div class="od-stat-l">Compensation</div><div class="od-stat-v" id="odSalary"></div></div>
+        <div class="od-stat"><div class="od-stat-l">Location</div><div class="od-stat-v" id="odLocation"></div></div>
+      </div>
+      <div class="od-match-box">
+        <div class="od-match-t"><span class="mdot" style="width:6px;height:6px;border-radius:50%;background:#3BB273;display:inline-block;"></span><span id="odMatchPct"></span> match</div>
+        <div class="od-match-d" id="odMatchReason"></div>
+      </div>
+      <div class="od-section-t">About this role</div>
+      <div class="od-text" id="odAbout"></div>
+      <div class="od-section-t">Industry</div>
+      <div class="od-text" id="odIndustry"></div>
+    </div>
+    <div class="od-foot">
+      <button class="od-btn-primary" id="odIntro">Get introduced →</button>
+      <button class="od-btn-ghost" id="odView">View posting</button>
+    </div>
+  </aside>
 
   <!-- Chat view -->
   <div class="chat">
@@ -1210,6 +1559,249 @@ async function maybeRenderRoles(wrap,q){
   if(jobs&&jobs.length)renderRolesCard(wrap,jobs,q);
   return true;
 }
+
+
+// ═══════════════ JOBS (TrueUp-style: faceted filters + infinite scroll) ═══════════════
+const OPP_FALLBACK=[
+ {role:'Full-Stack Software Engineer',company:'Northslope Technologies',sector:'ai',salary:275000,salaryLabel:'$185K – $275K',location:'New York, NY',match:96,url:'https://jobs.ashbyhq.com/northslope-technologies',badges:['new'],posted:1},
+ {role:'Forward Deployed Engineer',company:'Northslope Technologies',sector:'ai',salary:250000,salaryLabel:'$175K – $250K',location:'New York, NY',match:94,url:'https://jobs.ashbyhq.com/northslope-technologies',badges:['hot'],posted:2},
+ {role:'Forward Deployed Software Engineer, New Grad',company:'Northslope Technologies',sector:'ai',salary:155000,salaryLabel:'$135K – $155K',location:'New York, NY',match:92,url:'https://jobs.ashbyhq.com/northslope-technologies',badges:['new'],posted:1},
+ {role:'Business Recruiter',company:'Northslope Technologies',sector:'ai',salary:150000,salaryLabel:'$120K – $150K',location:'New York, NY',match:88,url:'https://jobs.ashbyhq.com/northslope-technologies',posted:4},
+ {role:'Technical Sourcer',company:'Northslope Technologies',sector:'ai',salary:140000,salaryLabel:'$110K – $140K',location:'New York, NY',match:86,url:'https://jobs.ashbyhq.com/northslope-technologies',posted:5},
+ {role:'ML Engineer',company:'Anduril',sector:'def',salary:200000,salaryLabel:'$160K – $200K',location:'Costa Mesa, CA',match:95,badges:['hot'],posted:2},
+ {role:'Autonomy Software Engineer',company:'Anduril',sector:'def',salary:210000,salaryLabel:'$170K – $210K',location:'Costa Mesa, CA',match:93,posted:6},
+ {role:'Forward Deployed Engineer',company:'Palantir',sector:'def',salary:190000,salaryLabel:'$135K – $190K',location:'Washington, DC',match:92,posted:3},
+ {role:'Software Engineer, Backend',company:'Palantir',sector:'def',salary:185000,salaryLabel:'$135K – $185K',location:'New York, NY',match:90,posted:7},
+ {role:'Applied Research Scientist',company:'Shield AI',sector:'def',salary:205000,salaryLabel:'$165K – $205K',location:'San Diego, CA',match:91,posted:3},
+ {role:'Robotics Software Engineer',company:'Figure',sector:'rob',salary:230000,salaryLabel:'$180K – $230K',location:'Sunnyvale, CA',match:94,badges:['hot'],posted:1},
+ {role:'Controls Engineer',company:'Figure',sector:'rob',salary:200000,salaryLabel:'$160K – $200K',location:'Sunnyvale, CA',match:89,posted:5},
+ {role:'Perception Engineer',company:'Skild AI',sector:'rob',salary:215000,salaryLabel:'$170K – $215K',location:'Pittsburgh, PA',match:88,posted:8},
+ {role:'Mechanical Engineer',company:'Physical Intelligence',sector:'rob',salary:195000,salaryLabel:'$155K – $195K',location:'San Francisco, CA',match:86,posted:4},
+ {role:'Systems Engineer',company:'Commonwealth Fusion',sector:'energy',salary:170000,salaryLabel:'$130K – $170K',location:'Devens, MA',match:90,posted:6},
+ {role:'Plasma Physicist',company:'Commonwealth Fusion',sector:'energy',salary:185000,salaryLabel:'$150K – $185K',location:'Devens, MA',match:87,posted:9},
+ {role:'Power Electronics Engineer',company:'Base Power',sector:'energy',salary:180000,salaryLabel:'$140K – $180K',location:'Austin, TX',match:85,badges:['new'],posted:2},
+ {role:'Grid Software Engineer',company:'Crusoe',sector:'energy',salary:190000,salaryLabel:'$150K – $190K',location:'Denver, CO',match:84,posted:7},
+ {role:'AI Product Manager',company:'Scale AI',sector:'ai',salary:200000,salaryLabel:'$160K – $200K',location:'San Francisco, CA',match:91,posted:3},
+ {role:'Full-Stack Engineer',company:'Ramp',sector:'ai',salary:195000,salaryLabel:'$155K – $195K',location:'New York, NY',match:90,posted:5},
+ {role:'Applied AI Engineer',company:'Sierra',sector:'ai',salary:230000,salaryLabel:'$185K – $230K',location:'San Francisco, CA',match:92,badges:['hot'],posted:2},
+ {role:'Member of Technical Staff',company:'Perplexity',sector:'ai',salary:250000,salaryLabel:'$200K – $250K',location:'San Francisco, CA',match:93,posted:1},
+ {role:'Hardware Engineer',company:'Astranis',sector:'energy',salary:175000,salaryLabel:'$140K – $175K',location:'San Francisco, CA',match:83,posted:8},
+ {role:'Deployment Strategist',company:'Northslope Technologies',sector:'ai',salary:200000,salaryLabel:'$150K – $200K',location:'New York, NY',match:88,url:'https://jobs.ashbyhq.com/northslope-technologies',posted:4},
+];
+
+const SECN={ai:'AI',def:'Defense',rob:'Robotics',energy:'Clean energy'};
+const COMPANY_DOMAINS={
+ 'Northslope Technologies':'northslope.tech','Anduril':'anduril.com','Palantir':'palantir.com',
+ 'Shield AI':'shield.ai','Figure':'figure.ai','Skild AI':'skild.ai','Physical Intelligence':'physicalintelligence.company',
+ 'Commonwealth Fusion':'cfs.energy','Base Power':'basepowercompany.com','Crusoe':'crusoe.ai',
+ 'Scale AI':'scale.com','Ramp':'ramp.com','Sierra':'sierra.ai','Perplexity':'perplexity.ai','Astranis':'astranis.com'
+};
+function companyDomain(name){
+  if(!name)return null;
+  if(COMPANY_DOMAINS[name])return COMPANY_DOMAINS[name];
+  const slug=name.toLowerCase().replace(/\b(technologies|technology|labs|inc|llc|co|corp|company|ai)\b/g,'').replace(/[^a-z0-9]/g,'').trim();
+  return slug?slug+'.com':null;
+}
+function jobAvatar(j,cls){
+  const wrap=document.createElement('div');wrap.className=cls+' opp-av-'+(j.sector||'ai');
+  const init=(j.company||'?').trim().charAt(0).toUpperCase();wrap.textContent=init;
+  const domain=companyDomain(j.company);
+  if(domain){const img=new Image();img.alt=j.company;
+    img.onload=()=>{wrap.classList.add('has-logo');wrap.textContent='';wrap.appendChild(img);};
+    img.onerror=()=>{};img.src='https://logo.clearbit.com/'+domain+'?size=96';}
+  return wrap;
+}
+function oppMoney(j){return j.salaryLabel?j.salaryLabel:(j.salary?('$'+Math.round(j.salary/1000)+'k'):'—');}
+function matchReason(j){
+  const r=[];
+  if(/new york|nyc/i.test(j.location||''))r.push('your NYC location preference');
+  if(j.sector==='ai')r.push('your interest in AI');
+  if(j.sector==='def')r.push('your defense-tech focus');
+  if(j.sector==='rob')r.push('your robotics background');
+  if(j.sector==='energy')r.push('your clean-energy interest');
+  if(/engineer|technical|software/i.test(j.role||''))r.push('your engineering skills');
+  const p=r.slice(0,2);
+  return p.length?('Strong fit based on '+p.join(' and ')+'. Add your resume to sharpen this score.'):'This role aligns with the profile you are building on Launched.';
+}
+function badgeHtml(b){const m={new:['new','New'],hot:['hot','Actively hiring'],remote:['remote','Remote']}[b];return m?'<span class="jrow-badge '+m[0]+'">'+m[1]+'</span>':'';}
+function postedLabel(d){d=d||1;return d===1?'1 day ago':(d+' days ago');}
+
+async function fetchAllJobs(){
+  try{
+    const r=await fetch('/api/jobs',{headers:{'accept':'application/json'}});
+    if(r.ok){const d=await r.json();const arr=Array.isArray(d)?d:(d.jobs||d.results||d.data);
+      if(Array.isArray(arr)&&arr.length){return arr.map((j,i)=>({
+        role:j.role||j.title||'Role',company:j.company||'—',sector:(j.sector||'ai'),
+        salary:j.salary||0,salaryLabel:j.salaryLabel||null,location:j.location||'Remote',
+        match:j.match||85,url:j.url||j.jobUrl||'#',badges:j.badges||[],posted:j.posted||((i%9)+1),
+        department:j.department||'',employmentType:j.employmentType||''
+      }));}}
+  }catch(e){}
+  return OPP_FALLBACK.slice();
+}
+
+// ── state ──
+const jState={all:[],filtered:[],shown:0,batch:12,q:'',sort:'posted',loading:false,done:false,
+  facets:{sector:new Set(),company:new Set(),location:new Set(),comp:new Set()}};
+const COMP_BUCKETS=[['150','$150K+',150000],['180','$180K+',180000],['200','$200K+',200000],['250','$250K+',250000]];
+
+function buildFacets(){
+  const jobs=jState.all;
+  // sector
+  const secCount={};jobs.forEach(j=>secCount[j.sector]=(secCount[j.sector]||0)+1);
+  document.getElementById('facetSector').innerHTML=Object.keys(SECN).filter(s=>secCount[s]).map(s=>
+    facetOpt('sector',s,SECN[s],secCount[s])).join('');
+  // company (top by count)
+  const coCount={};jobs.forEach(j=>coCount[j.company]=(coCount[j.company]||0)+1);
+  const cos=Object.keys(coCount).sort((a,b)=>coCount[b]-coCount[a]);
+  document.getElementById('facetCompany').innerHTML=cos.map(c=>facetOpt('company',c,c,coCount[c])).join('');
+  // location (city)
+  const locCount={};jobs.forEach(j=>{const c=(j.location||'Remote').split(',')[0].trim();locCount[c]=(locCount[c]||0)+1;});
+  const locs=Object.keys(locCount).sort((a,b)=>locCount[b]-locCount[a]);
+  document.getElementById('facetLocation').innerHTML=locs.map(l=>facetOpt('location',l,l,locCount[l])).join('');
+  // comp buckets
+  document.getElementById('facetComp').innerHTML=COMP_BUCKETS.map(bk=>
+    facetOpt('comp',bk[0],bk[1],jobs.filter(j=>(j.salary||0)>=bk[2]).length)).join('');
+  // wire
+  document.querySelectorAll('.jf-opt').forEach(o=>o.onclick=()=>{
+    const f=o.dataset.facet,v=o.dataset.val,set=jState.facets[f];
+    if(set.has(v)){set.delete(v);o.classList.remove('on');}else{set.add(v);o.classList.add('on');}
+    jobsApply();
+  });
+}
+function facetOpt(facet,val,label,count){
+  return '<div class="jf-opt" data-facet="'+facet+'" data-val="'+String(val).replace(/"/g,'&quot;')+'">'+
+    '<span class="jf-check"><svg width="11" height="11" viewBox="0 0 24 24" fill="none"><path d="M5 12l5 5L20 6" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></span>'+
+    '<span>'+label+'</span><span class="jf-count">'+count+'</span></div>';
+}
+
+function jobsApply(){
+  let list=jState.all.slice();
+  const F=jState.facets;
+  if(F.sector.size)list=list.filter(j=>F.sector.has(j.sector));
+  if(F.company.size)list=list.filter(j=>F.company.has(j.company));
+  if(F.location.size)list=list.filter(j=>F.location.has((j.location||'Remote').split(',')[0].trim()));
+  if(F.comp.size){const min=Math.min(...[...F.comp].map(v=>COMP_BUCKETS.find(b=>b[0]===v)[2]));list=list.filter(j=>(j.salary||0)>=min);}
+  if(jState.q){const t=jState.q.toLowerCase();list=list.filter(j=>(j.role+' '+j.company+' '+j.location).toLowerCase().includes(t));}
+  const s=jState.sort;
+  list.sort((a,b)=>{
+    if(s==='salary')return (b.salary||0)-(a.salary||0);
+    if(s==='match')return (b.match||0)-(a.match||0);
+    if(s==='company')return a.company.localeCompare(b.company);
+    if(s==='posted')return (a.posted||99)-(b.posted||99);
+    return 0;
+  });
+  jState.filtered=list;jState.shown=0;jState.done=false;
+  document.getElementById('jobsList').innerHTML='';
+  document.getElementById('jobsEnd').style.display='none';
+  document.getElementById('jobsEmpty').style.display=list.length?'none':'block';
+  document.getElementById('jrCount').textContent=list.length;
+  renderActivePills();
+  jobsRenderMore();
+}
+
+function renderActivePills(){
+  const F=jState.facets;const pills=[];
+  const add=(facet,val,label)=>pills.push('<span class="jr-pill">'+label+'<span class="x" data-f="'+facet+'" data-v="'+String(val).replace(/"/g,'&quot;')+'"><svg width="11" height="11" viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg></span></span>');
+  F.sector.forEach(v=>add('sector',v,SECN[v]||v));
+  F.company.forEach(v=>add('company',v,v));
+  F.location.forEach(v=>add('location',v,v));
+  F.comp.forEach(v=>add('comp',v,(COMP_BUCKETS.find(b=>b[0]===v)||[])[1]||v));
+  const wrap=document.getElementById('jrActive');
+  wrap.innerHTML=pills.length?pills.join('')+'<button class="jf-clear" onclick="clearJobFilters()" style="margin-left:4px">Clear all</button>':'';
+  wrap.querySelectorAll('.x').forEach(x=>x.onclick=()=>{
+    jState.facets[x.dataset.f].delete(x.dataset.v);
+    document.querySelectorAll('.jf-opt').forEach(o=>{if(o.dataset.facet===x.dataset.f&&o.dataset.val===x.dataset.v)o.classList.remove('on');});
+    jobsApply();
+  });
+}
+function clearJobFilters(){
+  Object.values(jState.facets).forEach(s=>s.clear());
+  document.querySelectorAll('.jf-opt').forEach(o=>o.classList.remove('on'));
+  document.getElementById('jobsSearch').value='';jState.q='';
+  jobsApply();
+}
+
+function buildJobRow(j,idx){
+  const el=document.createElement('div');el.className='jrow';el.style.animationDelay=((idx%jState.batch)*0.025)+'s';
+  const badges=(j.badges||[]).map(badgeHtml).join('');
+  el.innerHTML='<span class="jav-slot"></span>'+
+    '<div class="jrow-main"><div class="jrow-role">'+j.role+' '+badges+'</div>'+
+    '<div class="jrow-meta"><span>'+j.company+'</span><span class="dot"></span>'+
+    '<span class="jrow-tag '+(j.sector||'ai')+'">'+(SECN[j.sector]||'—')+'</span>'+
+    '<span class="dot"></span><span class="loc-hide">'+j.location+'</span></div></div>'+
+    '<div class="jrow-sal"><div class="jrow-sal-v">'+oppMoney(j)+'</div><div class="jrow-posted">'+postedLabel(j.posted)+'</div></div>';
+  el.querySelector('.jav-slot').replaceWith(jobAvatar(j,'jrow-av'));
+  el.onclick=()=>openOppDetail(j,el);
+  return el;
+}
+function jobsRenderMore(){
+  if(jState.loading||jState.done)return;jState.loading=true;
+  const list=jState.filtered,start=jState.shown,end=Math.min(start+jState.batch,list.length);
+  const frag=document.createDocumentFragment();
+  for(let i=start;i<end;i++)frag.appendChild(buildJobRow(list[i],i));
+  document.getElementById('jobsList').appendChild(frag);
+  jState.shown=end;jState.loading=false;
+  if(jState.shown>=list.length){jState.done=true;
+    const e=document.getElementById('jobsEnd');e.style.display=list.length>jState.batch?'block':'none';
+    e.textContent='You have seen all '+list.length+' jobs.';}
+}
+
+// open/close jobs page
+let jobsInited=false;
+async function openJobs(){
+  document.body.classList.add('jobs-open');
+  if(window.matchMedia('(max-width:860px)').matches){document.querySelector('.sidebar').classList.remove('open');}
+  if(jobsInited)return;jobsInited=true;
+  jState.all=await fetchAllJobs();
+  document.getElementById('jobsLiveCount').textContent=jState.all.length;
+  buildFacets();
+  jobsApply();
+  let st;
+  document.getElementById('jobsSearch').addEventListener('input',e=>{clearTimeout(st);st=setTimeout(()=>{jState.q=e.target.value.trim();jobsApply();},180);});
+  document.getElementById('jobsSort').addEventListener('change',e=>{jState.sort=e.target.value;jobsApply();});
+  const io=new IntersectionObserver(en=>{en.forEach(e=>{if(e.isIntersecting)jobsRenderMore();});},{root:document.getElementById('jobsResults'),rootMargin:'300px'});
+  io.observe(document.getElementById('jobsSentinel'));
+}
+function closeJobs(){document.body.classList.remove('jobs-open');}
+
+// ── slide-in detail (reused for job rows) ──
+let activeOppEl=null;
+function openOppDetail(j,el){
+  if(activeOppEl)activeOppEl.classList.remove('active');
+  if(el){el.classList.add('active');activeOppEl=el;}
+  const init=(j.company||'?').trim().charAt(0).toUpperCase();
+  const av=document.getElementById('odAvatar');
+  av.className='od-avatar opp-av-'+(j.sector||'ai');av.textContent=init;av.classList.remove('has-logo');
+  const _dom=companyDomain(j.company);
+  if(_dom){const _img=new Image();_img.alt=j.company;
+    _img.onload=()=>{av.classList.add('has-logo');av.textContent='';av.appendChild(_img);};
+    _img.onerror=()=>{};_img.src='https://logo.clearbit.com/'+_dom+'?size=128';}
+  document.getElementById('odCompany').textContent=j.company;
+  document.getElementById('odRole').textContent=j.role;
+  document.getElementById('odBadges').innerHTML=(j.badges||[]).map(b=>{const m={new:['new','New'],hot:['hot','Actively hiring'],remote:['remote','Remote']}[b];return m?'<span class="opp-badge '+m[0]+'">'+m[1]+'</span>':'';}).join('')+'<span class="opp-tag '+(j.sector||'ai')+'">'+(SECN[j.sector]||'—')+'</span>';
+  document.getElementById('odSalary').textContent=oppMoney(j);
+  document.getElementById('odLocation').textContent=j.location;
+  document.getElementById('odMatchPct').textContent=(j.match||85)+'%';
+  document.getElementById('odMatchReason').textContent=matchReason(j);
+  document.getElementById('odAbout').textContent=j.company+' is hiring a '+j.role+(j.location?(' based in '+j.location):'')+'. This is a live opening at a company building in '+(SECN[j.sector]||'an emerging industry')+'. Launched can make a warm introduction so you skip the application pile.';
+  document.getElementById('odIndustry').textContent=SECN[j.sector]||'Emerging tech';
+  document.getElementById('odIntro').onclick=()=>{closeOppDetail();openModal('Get introduced','Create a free profile and we will introduce you to '+j.company+' for the '+j.role+' role.');};
+  document.getElementById('odView').onclick=()=>{if(j.url&&j.url!=='#')window.open(j.url,'_blank');else toast('Sign up to view this posting');};
+  document.getElementById('oppDetail').classList.add('show');
+  document.getElementById('oppDetail').setAttribute('aria-hidden','false');
+  document.getElementById('oppDetailOverlay').classList.add('show');
+}
+function closeOppDetail(){
+  document.getElementById('oppDetail').classList.remove('show');
+  document.getElementById('oppDetail').setAttribute('aria-hidden','true');
+  document.getElementById('oppDetailOverlay').classList.remove('show');
+  if(activeOppEl){activeOppEl.classList.remove('active');activeOppEl=null;}
+}
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){
+  if(document.getElementById('oppDetail').classList.contains('show'))closeOppDetail();
+  else if(document.body.classList.contains('jobs-open'))closeJobs();
+}});
 
 wireAll();
 
