@@ -1687,9 +1687,22 @@ const COMPANY_DOMAINS={
  'Northslope Technologies':'northslope.tech','Anduril':'anduril.com','Palantir':'palantir.com',
  'Shield AI':'shield.ai','Figure':'figure.ai','Skild AI':'skild.ai','Physical Intelligence':'physicalintelligence.company',
  'Commonwealth Fusion':'cfs.energy','Base Power':'basepowercompany.com','Crusoe':'crusoe.ai',
- 'Scale AI':'scale.com','Ramp':'ramp.com','Sierra':'sierra.ai','Perplexity':'perplexity.ai','Astranis':'astranis.com'
+ 'Scale AI':'scale.com','Ramp':'ramp.com','Sierra':'sierra.ai','Perplexity':'perplexity.ai','Astranis':'astranis.com',
+ 'Linear':'linear.app','Runway':'runwayml.com','Hex':'hex.tech','Clay':'clay.com','Vanta':'vanta.com',
+ 'Modal':'modal.com','Baseten':'baseten.co','Datadog':'datadoghq.com','Betterment':'betterment.com',
+ 'Justworks':'justworks.com','Alloy':'alloy.com','Cockroach Labs':'cockroachlabs.com','DigitalOcean':'digitalocean.com',
+ 'Oscar Health':'hioscar.com','MongoDB':'mongodb.com','Attentive':'attentive.com','Ro':'ro.co'
 };
-function companyDomain(name){
+// Resolve a company's domain: prefer the real domain from the data, then the known map, then a guess.
+function resolveDomain(j){
+  if(j&&j.domain)return j.domain;                 // real domain from companies.js (most accurate)
+  const name=j&&j.company;
+  if(!name)return null;
+  if(COMPANY_DOMAINS[name])return COMPANY_DOMAINS[name];
+  const slug=name.toLowerCase().replace(/\b(technologies|technology|labs|inc|llc|co|corp|company|ai)\b/g,'').replace(/[^a-z0-9]/g,'').trim();
+  return slug?slug+'.com':null;
+}
+function companyDomain(name){ // kept for the detail panel (name-only callers)
   if(!name)return null;
   if(COMPANY_DOMAINS[name])return COMPANY_DOMAINS[name];
   const slug=name.toLowerCase().replace(/\b(technologies|technology|labs|inc|llc|co|corp|company|ai)\b/g,'').replace(/[^a-z0-9]/g,'').trim();
@@ -1698,7 +1711,7 @@ function companyDomain(name){
 function jobAvatar(j,cls){
   const wrap=document.createElement('div');wrap.className=cls+' opp-av-'+(j.sector||'ai');
   const init=(j.company||'?').trim().charAt(0).toUpperCase();wrap.textContent=init;
-  const domain=companyDomain(j.company);
+  const domain=resolveDomain(j);
   if(domain){const img=new Image();img.alt=j.company;
     img.onload=()=>{wrap.classList.add('has-logo');wrap.textContent='';wrap.appendChild(img);};
     img.onerror=()=>{};img.src='https://logo.clearbit.com/'+domain+'?size=96';}
@@ -1727,7 +1740,7 @@ async function fetchAllJobs(){
         role:j.role||j.title||'Role',company:j.company||'—',sector:(j.sector||'ai'),
         salary:j.salary||0,salaryLabel:j.salaryLabel||null,location:j.location||'Remote',
         match:j.match||85,url:j.url||j.jobUrl||'#',badges:j.badges||[],posted:j.posted||((i%9)+1),
-        department:j.department||'',employmentType:j.employmentType||''
+        domain:j.domain||null,department:j.department||'',employmentType:j.employmentType||''
       }));}}
   }catch(e){}
   return OPP_FALLBACK.slice();
@@ -1918,7 +1931,7 @@ function openOppDetail(j,el){
   const init=(j.company||'?').trim().charAt(0).toUpperCase();
   const av=document.getElementById('odAvatar');
   av.className='od-avatar opp-av-'+(j.sector||'ai');av.textContent=init;av.classList.remove('has-logo');
-  const _dom=companyDomain(j.company);
+  const _dom=resolveDomain(j);
   if(_dom){const _img=new Image();_img.alt=j.company;
     _img.onload=()=>{av.classList.add('has-logo');av.textContent='';av.appendChild(_img);};
     _img.onerror=()=>{};_img.src='https://logo.clearbit.com/'+_dom+'?size=128';}
