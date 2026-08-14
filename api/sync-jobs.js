@@ -29,12 +29,12 @@ function parseSalary(s){if(!s)return{salary:0,label:null};
   return{salary:0,label:null};}
 function jid(company,role,location){return crypto.createHash('sha1').update((company+'|'+role+'|'+location).toLowerCase()).digest('hex').slice(0,24);}
 
-function row(j,company,sector){
+function row(j,company,sector,domain){
   const cat=categoryOf(j.role);
   return {id:jid(company,j.role,j.location||''),role:j.role,company:company,
     sector:sector||inferSector(j.role+' '+(j.department||'')),category:cat,
     salary:j.salary||0,salary_label:j.salaryLabel||null,location:j.location||'Remote',
-    department:j.department||'',source:j.source,url:j.url||'#',posted:1,match:85};
+    department:j.department||'',source:j.source,url:j.url||'#',posted:1,match:85,domain:domain||null};
 }
 
 async function fetchAshby(c){
@@ -43,17 +43,17 @@ async function fetchAshby(c){
   return((d&&d.jobs)||[]).filter(j=>j.isListed!==false).map(j=>{
     const comp=j.compensation||{};const sal=parseSalary(comp.scrapeableCompensationSalarySummary||comp.compensationTierSummary||'');
     const loc=j.location||(j.address&&j.address.postalAddress&&j.address.postalAddress.addressLocality)||(j.isRemote?'Remote':'');
-    return row({role:j.title,salary:sal.salary,salaryLabel:sal.label,location:loc,department:j.department||'',source:'Ashby',url:j.jobUrl||j.applyUrl},c.name,c.sector);});
+    return row({role:j.title,salary:sal.salary,salaryLabel:sal.label,location:loc,department:j.department||'',source:'Ashby',url:j.jobUrl||j.applyUrl},c.name,c.sector,c.domain);});
 }
 async function fetchGreenhouse(c){
   const r=await fetch('https://boards-api.greenhouse.io/v1/boards/'+c.slug+'/jobs?content=true',{headers:{accept:'application/json'}});
   if(!r.ok)return[];const d=await r.json();
-  return((d&&d.jobs)||[]).map(j=>row({role:j.title,location:(j.location&&j.location.name)||'',department:(j.departments&&j.departments[0]&&j.departments[0].name)||'',source:'Greenhouse',url:j.absolute_url},c.name,c.sector));
+  return((d&&d.jobs)||[]).map(j=>row({role:j.title,location:(j.location&&j.location.name)||'',department:(j.departments&&j.departments[0]&&j.departments[0].name)||'',source:'Greenhouse',url:j.absolute_url},c.name,c.sector,c.domain));
 }
 async function fetchLever(c){
   const r=await fetch('https://api.lever.co/v0/postings/'+c.slug+'?mode=json',{headers:{accept:'application/json'}});
   if(!r.ok)return[];const d=await r.json();
-  return(Array.isArray(d)?d:[]).map(j=>row({role:j.text,location:(j.categories&&j.categories.location)||'',department:(j.categories&&j.categories.team)||'',source:'Lever',url:j.hostedUrl||j.applyUrl},c.name,c.sector));
+  return(Array.isArray(d)?d:[]).map(j=>row({role:j.text,location:(j.categories&&j.categories.location)||'',department:(j.categories&&j.categories.team)||'',source:'Lever',url:j.hostedUrl||j.applyUrl},c.name,c.sector,c.domain));
 }
 function fetchCompany(c){const fn=c.ats==='greenhouse'?fetchGreenhouse:c.ats==='lever'?fetchLever:fetchAshby;return fn(c).catch(()=>[]);}
 
